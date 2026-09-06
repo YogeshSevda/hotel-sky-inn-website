@@ -1,0 +1,4 @@
+node_modules
+check*.mjs
+*.png
+.DS_Store
