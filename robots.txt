@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /thank-you.html
 
-Sitemap: https://hotelskyinn.example/sitemap.xml
+Sitemap: https://hotel-sky-inn.netlify.app/sitemap.xml
