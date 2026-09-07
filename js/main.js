@@ -20,7 +20,64 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   }
+
+  initHeaderScrollState();
+  initScrollReveal();
 });
+
+// Adds/removes .is-scrolled on the header so it can pick up a subtle
+// shadow/backdrop once the page has scrolled past the hero.
+function initHeaderScrollState() {
+  var header = document.querySelector('.site-header');
+  if (!header) return;
+
+  function update() {
+    if (window.scrollY > 12) {
+      header.classList.add('is-scrolled');
+    } else {
+      header.classList.remove('is-scrolled');
+    }
+  }
+
+  update();
+  window.addEventListener('scroll', update, { passive: true });
+}
+
+// Fades/slides elements marked .reveal (and staggers children of
+// .reveal-stagger) into place as they enter the viewport. Falls back to
+// showing everything immediately if IntersectionObserver isn't available.
+function initScrollReveal() {
+  var targets = Array.prototype.slice.call(document.querySelectorAll('.reveal, .reveal-stagger'));
+  if (!targets.length) return;
+
+  if (typeof window.IntersectionObserver === 'undefined') {
+    targets.forEach(function (el) { el.classList.add('is-visible'); });
+    return;
+  }
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+  targets.forEach(function (el) { observer.observe(el); });
+
+  // Safety net: if anything above the fold fails to trigger (unlikely, but
+  // cheap to guard against), reveal it after a short delay rather than
+  // leaving content permanently invisible.
+  window.setTimeout(function () {
+    targets.forEach(function (el) {
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight) {
+        el.classList.add('is-visible');
+      }
+    });
+  }, 1200);
+}
 
 // Fills in [data-rate-room] elements from assets/data/rates.js, if present
 // on the page. Editing rates.js is all that's needed to change displayed
