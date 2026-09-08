@@ -1,22 +1,32 @@
 // Hotel Sky Inn — Daily Tiffin Booking
 // Self-contained logic for the tiffin ordering widget on tiffin.html.
-// No backend yet: "Confirm Booking" logs the order payload to the console
-// (see buildPayload) so it can be wired up to a real backend later.
+// No backend yet: "Confirm Booking" / "Start Monthly Plan" log the order
+// payload to the console so it can be wired up to a real backend later.
 
 (function () {
   'use strict';
 
   var BASE_PRICE = 80;
   var BAAHAR_PRICE = 15;
-  var SHAGUN_PRICE_EARLY = 10;
-  var SHAGUN_PRICE_LATE = 20;
+
+  // Shagun Thali: priced up from the old ₹20/₹10 scheme, but the early-bird
+  // window still saves a real ₹15 (37.5% off) — attractive discount, higher
+  // floor price either way.
+  var SHAGUN_PRICE_EARLY = 25;
+  var SHAGUN_PRICE_LATE = 40;
+  var SHAGUN_DISCOUNT = SHAGUN_PRICE_LATE - SHAGUN_PRICE_EARLY;
   var EARLY_BIRD_CUTOFF_HOUR = 14; // 2:00 PM
 
-  var DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  // Monthly plan: 30 tiffins for a fixed price, cheaper per-day than ordering
+  // daily, with a discounted bulk rate to upgrade every tiffin to Shagun Thali.
+  var MONTHLY_DAYS = 30;
+  var MONTHLY_PRICE = 2100; // ~₹70/day, ₹300 cheaper than 30 × ₹80
+  var MONTHLY_SHAGUN_PRICE = 600; // ₹20/day bulk rate — cheaper than any daily rate
+
   var DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   // Weekly menu — edit these values to change what's on offer.
-  // "shagun" is the premium curry that the Shagun Plate upgrade swaps in.
+  // "shagun" is the premium curry that the Shagun Thali upgrade swaps in.
   var TIFFIN_MENU = {
     Monday: { dal: 'Dal Fry', curries: ['Paneer Curry', 'Soya Chaap Masala'], shagun: 'Shahi Paneer' },
     Tuesday: { dal: 'Dal Tadka', curries: ['Mix Veg', 'Chana Masala'], shagun: 'Kadhai Paneer' },
@@ -27,13 +37,20 @@
   };
 
   var state = {
-    selectedDate: null,   // ISO yyyy-mm-dd
-    selectedDay: null,    // 'Monday' etc.
-    curryIndex: null,     // 0 or 1
+    mode: 'daily',         // 'daily' | 'monthly'
+
+    selectedDate: null,    // ISO yyyy-mm-dd
+    selectedDay: null,     // 'Monday' etc.
+    curryIndex: null,      // 0 or 1
     curryName: null,
     shagun: false,
     baahar: false,
+
+    monthlyShagun: false,
+
+    deliveryType: 'pickup', // 'pickup' | 'delivery'
     pickupZone: '',
+    deliveryAddress: '',
     roomInfo: ''
   };
 
@@ -50,7 +67,20 @@
     els.shagunPriceTag = document.getElementById('shagunPriceTag');
     els.shagunToggle = document.getElementById('shagunToggle');
     els.baaharToggle = document.getElementById('baaharToggle');
+
+    els.modeBtnDaily = document.getElementById('modeBtnDaily');
+    els.modeBtnMonthly = document.getElementById('modeBtnMonthly');
+    els.dailyPanel = document.getElementById('dailyPanel');
+    els.monthlyPanel = document.getElementById('monthlyPanel');
+    els.monthlyShagunToggle = document.getElementById('monthlyShagunToggle');
+
+    els.deliveryTypePickup = document.getElementById('deliveryTypePickup');
+    els.deliveryTypeDelivery = document.getElementById('deliveryTypeDelivery');
+    els.pickupZoneField = document.getElementById('pickupZoneField');
+    els.deliveryAddressField = document.getElementById('deliveryAddressField');
     els.pickupZone = document.getElementById('pickupZone');
+    els.deliveryAddress = document.getElementById('deliveryAddress');
+
     els.roomInfo = document.getElementById('roomInfo');
     els.roomInfoHint = document.getElementById('roomInfoHint');
     els.breakdownList = document.getElementById('priceBreakdown');
@@ -61,6 +91,7 @@
     els.closedNote = document.getElementById('kitchenClosedNote');
 
     buildDayStrip();
+    wireModeSwitch();
     wireUpgradeToggles();
     wireDeliveryFields();
     wireConfirmButton();
@@ -91,6 +122,33 @@
     return isEarlyBird(istNow) ? SHAGUN_PRICE_EARLY : SHAGUN_PRICE_LATE;
   }
 
+  // ---------- Daily / Monthly mode switch ----------
+
+  function wireModeSwitch() {
+    if (!els.modeBtnDaily || !els.modeBtnMonthly) return;
+    els.modeBtnDaily.addEventListener('click', function () { setMode('daily'); });
+    els.modeBtnMonthly.addEventListener('click', function () { setMode('monthly'); });
+  }
+
+  function setMode(mode) {
+    state.mode = mode;
+    var isDaily = mode === 'daily';
+
+    els.modeBtnDaily.classList.toggle('is-active', isDaily);
+    els.modeBtnDaily.setAttribute('aria-selected', isDaily ? 'true' : 'false');
+    els.modeBtnMonthly.classList.toggle('is-active', !isDaily);
+    els.modeBtnMonthly.setAttribute('aria-selected', !isDaily ? 'true' : 'false');
+
+    if (els.dailyPanel) els.dailyPanel.hidden = !isDaily;
+    if (els.monthlyPanel) els.monthlyPanel.hidden = isDaily;
+
+    if (els.confirmBtn) {
+      els.confirmBtn.textContent = isDaily ? 'Confirm Booking' : 'Start Monthly Plan';
+    }
+
+    updateTotals();
+  }
+
   // ---------- Building the Monday–Saturday strip ----------
 
   function buildDayStrip() {
@@ -111,7 +169,6 @@
 
     var order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     var frag = document.createDocumentFragment();
-    var autoSelectDay = null;
 
     order.forEach(function (dayName, i) {
       var date = new Date(monday);
@@ -121,7 +178,6 @@
 
       var isPast = iso < todayISO;
       var isToday = iso === todayISO;
-      if (isToday) autoSelectDay = { dayName: dayName, iso: iso };
 
       var card = document.createElement('div');
       card.className = 'tiffin-day-card' + (isPast ? ' is-past' : '') + (isToday ? ' is-today' : '');
@@ -221,12 +277,36 @@
         updateTotals();
       });
     }
+    if (els.monthlyShagunToggle) {
+      els.monthlyShagunToggle.addEventListener('change', function () {
+        state.monthlyShagun = els.monthlyShagunToggle.checked;
+        updateTotals();
+      });
+    }
   }
 
+  // ---------- Pickup vs delivery + delivery fields ----------
+
   function wireDeliveryFields() {
+    if (els.deliveryTypePickup) {
+      els.deliveryTypePickup.addEventListener('change', function () {
+        if (els.deliveryTypePickup.checked) setDeliveryType('pickup');
+      });
+    }
+    if (els.deliveryTypeDelivery) {
+      els.deliveryTypeDelivery.addEventListener('change', function () {
+        if (els.deliveryTypeDelivery.checked) setDeliveryType('delivery');
+      });
+    }
     if (els.pickupZone) {
       els.pickupZone.addEventListener('change', function () {
         state.pickupZone = els.pickupZone.value;
+        updateTotals();
+      });
+    }
+    if (els.deliveryAddress) {
+      els.deliveryAddress.addEventListener('input', function () {
+        state.deliveryAddress = els.deliveryAddress.value.trim();
         updateTotals();
       });
     }
@@ -238,6 +318,14 @@
         }
       });
     }
+  }
+
+  function setDeliveryType(type) {
+    state.deliveryType = type;
+    var isPickup = type === 'pickup';
+    if (els.pickupZoneField) els.pickupZoneField.hidden = !isPickup;
+    if (els.deliveryAddressField) els.deliveryAddressField.hidden = isPickup;
+    updateTotals();
   }
 
   // ---------- Live ticking: early-bird banner + price refresh ----------
@@ -256,10 +344,12 @@
         var h = Math.floor(diffMs / 3600000);
         var m = Math.floor((diffMs % 3600000) / 60000);
         var left = h > 0 ? (h + 'h ' + m + 'm') : (m + 'm');
-        els.earlyBirdBanner.querySelector('.early-bird-text').textContent = 'Book by 2:00 PM to save ₹10 on the Shagun Plate!';
+        els.earlyBirdBanner.querySelector('.early-bird-text').textContent =
+          'Book by 2:00 PM to save ₹' + SHAGUN_DISCOUNT + ' on the Shagun Thali!';
         if (els.earlyBirdCountdown) els.earlyBirdCountdown.textContent = left + ' left';
       } else {
-        els.earlyBirdBanner.querySelector('.early-bird-text').textContent = 'Early-bird window closed for today — Shagun Plate is ₹20 now.';
+        els.earlyBirdBanner.querySelector('.early-bird-text').textContent =
+          'Early-bird window closed for today — Shagun Thali is ₹' + SHAGUN_PRICE_LATE + ' now.';
         if (els.earlyBirdCountdown) els.earlyBirdCountdown.textContent = '';
       }
     }
@@ -275,19 +365,29 @@
   // ---------- Totals + submit gating ----------
 
   function updateTotals() {
-    var istNow = getISTNow();
-    var price = shagunPrice(istNow);
     var lines = [];
-    var total = BASE_PRICE;
-    lines.push({ label: 'Core Tiffin', amount: BASE_PRICE });
+    var total;
 
-    if (state.shagun) {
-      total += price;
-      lines.push({ label: 'Shagun Plate upgrade', amount: price });
-    }
-    if (state.baahar) {
-      total += BAAHAR_PRICE;
-      lines.push({ label: 'Baahar ka Tiffin', amount: BAAHAR_PRICE });
+    if (state.mode === 'monthly') {
+      total = MONTHLY_PRICE;
+      lines.push({ label: 'Monthly Tiffin Plan (' + MONTHLY_DAYS + ' days)', amount: MONTHLY_PRICE });
+      if (state.monthlyShagun) {
+        total += MONTHLY_SHAGUN_PRICE;
+        lines.push({ label: 'Shagun Thali upgrade — every day', amount: MONTHLY_SHAGUN_PRICE });
+      }
+    } else {
+      var istNow = getISTNow();
+      var price = shagunPrice(istNow);
+      total = BASE_PRICE;
+      lines.push({ label: 'Core Tiffin', amount: BASE_PRICE });
+      if (state.shagun) {
+        total += price;
+        lines.push({ label: 'Shagun Thali upgrade', amount: price });
+      }
+      if (state.baahar) {
+        total += BAAHAR_PRICE;
+        lines.push({ label: 'Baahar ka Tiffin', amount: BAAHAR_PRICE });
+      }
     }
 
     if (els.breakdownList) {
@@ -295,14 +395,14 @@
         return '<li><span>' + l.label + '</span><span>₹' + l.amount + '</span></li>';
       }).join('');
     }
-    if (els.grandTotal) {
-      els.grandTotal.textContent = '₹' + total;
-    }
-    if (els.grandTotalSticky) {
-      els.grandTotalSticky.textContent = '₹' + total;
-    }
+    if (els.grandTotal) els.grandTotal.textContent = '₹' + total;
+    if (els.grandTotalSticky) els.grandTotalSticky.textContent = '₹' + total;
 
-    var canConfirm = !!state.curryName && !!state.pickupZone;
+    var hasDropoffDetails = state.deliveryType === 'pickup' ? !!state.pickupZone : state.deliveryAddress.length > 0;
+    var canConfirm = state.mode === 'monthly'
+      ? hasDropoffDetails
+      : !!state.curryName && hasDropoffDetails;
+
     if (els.confirmBtn) {
       els.confirmBtn.disabled = !canConfirm;
     }
@@ -322,23 +422,54 @@
       }
 
       var total = updateTotals();
-      var payload = {
+
+      if (state.mode === 'monthly') {
+        var istNow = getISTNow();
+        var payload = {
+          order_type: 'monthly',
+          start_date: formatISODate(istNow),
+          shagun_upgrade: state.monthlyShagun,
+          monthly_price: total,
+          delivery_type: state.deliveryType,
+          pickup_zone: state.deliveryType === 'pickup' ? state.pickupZone : null,
+          delivery_address: state.deliveryType === 'delivery' ? state.deliveryAddress : null,
+          room_no: state.roomInfo
+        };
+
+        // eslint-disable-next-line no-console
+        console.log('Monthly tiffin plan started:', payload);
+
+        if (els.successNote) {
+          els.successNote.hidden = false;
+          els.successNote.textContent = '🎉 Monthly plan started! ' +
+            (state.monthlyShagun ? 'Shagun Thali every day, ' : '') +
+            (state.deliveryType === 'pickup' ? 'pickup at ' + state.pickupZone : 'delivery to your address') +
+            ' — total ₹' + total + '/month.';
+          els.successNote.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+
+      var dailyPayload = {
         date: state.selectedDate,
         selected_curry: state.curryName,
         shagun_plate: state.shagun,
         baahar_tiffin: state.baahar,
         total_price: total,
-        pickup_zone: state.pickupZone,
+        delivery_type: state.deliveryType,
+        pickup_zone: state.deliveryType === 'pickup' ? state.pickupZone : null,
+        delivery_address: state.deliveryType === 'delivery' ? state.deliveryAddress : null,
         room_no: state.roomInfo
       };
 
       // eslint-disable-next-line no-console
-      console.log('Tiffin booking confirmed:', payload);
+      console.log('Tiffin booking confirmed:', dailyPayload);
 
       if (els.successNote) {
         els.successNote.hidden = false;
         els.successNote.textContent = '🎉 Order noted! ' + TIFFIN_MENU[state.selectedDay].dal + ' + ' + state.curryName +
-          ' for pickup at ' + state.pickupZone + '. We’ll have it ready — total ₹' + total + '.';
+          ' for ' + (state.deliveryType === 'pickup' ? 'pickup at ' + state.pickupZone : 'delivery to your address') +
+          '. We’ll have it ready — total ₹' + total + '.';
         els.successNote.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     });
