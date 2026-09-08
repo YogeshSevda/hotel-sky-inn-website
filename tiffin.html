@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Tiffin Booking for Hostel Students — Hotel Sky Inn, Sikar</title>
+<meta name="description" content="Pre-book your daily tiffin from Hotel Sky Inn, Sikar — pick your curry, add the Shagun Plate or Baahar ka Tiffin upgrade, choose a pickup zone near your hostel, and confirm in seconds. Built for JEE/NEET hostel students.">
+<link rel="canonical" href="https://hotel-sky-inn.netlify.app/tiffin.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Daily Tiffin Booking — Hotel Sky Inn, Sikar">
+<meta property="og:description" content="Pre-book your daily tiffin — pick your curry, add an upgrade, choose a pickup zone, and confirm in seconds.">
+<meta property="og:image" content="https://hotel-sky-inn.netlify.app/assets/images/rooms/room-wide-angle-07.jpg">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<noscript><style>.reveal,.reveal-stagger>*{opacity:1!important;transform:none!important;animation:none!important;}</style></noscript>
+</head>
+<body class="has-sticky-checkout">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container nav-bar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">LOGO</span>
+      <span class="brand-name">Hotel Sky Inn</span>
+    </a>
+
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="rooms.html">Rooms</a></li>
+      <li><a href="amenities.html">Amenities</a></li>
+      <li><a href="gallery.html">Gallery</a></li>
+      <li><a href="location.html">Location</a></li>
+      <li><a href="tiffin.html" aria-current="page">Tiffin</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <a class="btn btn-outline-light" href="tel:+919414038601">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Call Now
+      </a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="page-banner reveal">
+    <div class="container">
+      <span class="eyebrow">For Hostel Students</span>
+      <h1>Daily Tiffin Booking</h1>
+      <p>Fresh home-style tiffin, pre-booked in under a minute. Pick your day, pick your curry, choose where to collect it.</p>
+    </div>
+  </section>
+
+  <section class="section tiffin-section">
+    <div class="container tiffin-layout">
+
+      <div class="tiffin-main">
+
+        <p id="kitchenClosedNote" class="tiffin-closed-note" hidden>
+          Our tiffin kitchen is closed on Sundays — here's next week's menu so you can pre-book.
+        </p>
+
+        <div class="tiffin-card reveal">
+          <div class="tiffin-card-head">
+            <h2>This Week's Menu</h2>
+            <span class="tiffin-core-price">Core Tiffin — ₹80</span>
+          </div>
+          <p class="tiffin-core-desc">Every tiffin includes 1 Dal, your choice of curry, 4 Rotis, Rice and Salad. Pick a day below, then choose curry A or B to continue.</p>
+
+          <div class="tiffin-day-strip" id="tiffinDayStrip" aria-label="Weekly tiffin menu, Monday to Saturday">
+            <!-- day cards injected by js/tiffin.js -->
+          </div>
+
+          <p id="tiffinSummaryLine" class="tiffin-summary-line">Pick a day and a curry above to start your order.</p>
+        </div>
+
+        <div class="tiffin-card reveal">
+          <h2>Make It Extra Special</h2>
+
+          <div id="earlyBirdBanner" class="early-bird-banner">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            <span class="early-bird-text">Book by 2:00 PM to save ₹10 on the Shagun Plate!</span>
+            <span id="earlyBirdCountdown" class="early-bird-countdown"></span>
+          </div>
+
+          <div class="tiffin-upgrade-row">
+            <div class="tiffin-upgrade-info">
+              <span class="tiffin-upgrade-emoji" aria-hidden="true">🎉</span>
+              <div>
+                <h3>The Shagun Plate</h3>
+                <p>Swap your curry for today's premium special. <span id="shagunPriceTag" class="tiffin-upgrade-price">+₹10</span></p>
+              </div>
+            </div>
+            <label class="tiffin-switch">
+              <input type="checkbox" id="shagunToggle" aria-label="Add the Shagun Plate upgrade">
+              <span class="tiffin-switch-track" aria-hidden="true"></span>
+            </label>
+          </div>
+
+          <div class="tiffin-upgrade-row">
+            <div class="tiffin-upgrade-info">
+              <span class="tiffin-upgrade-emoji" aria-hidden="true">🍛</span>
+              <div>
+                <h3>Baahar ka Tiffin</h3>
+                <p>+2 extra chapatis, double salad &amp; extra pickle, for big appetites. <span class="tiffin-upgrade-price">+₹15</span></p>
+              </div>
+            </div>
+            <label class="tiffin-switch">
+              <input type="checkbox" id="baaharToggle" aria-label="Add the Baahar ka Tiffin extra portion">
+              <span class="tiffin-switch-track" aria-hidden="true"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="tiffin-card reveal">
+          <h2>Collection Details</h2>
+
+          <div class="form-field">
+            <label for="pickupZone">Pickup zone</label>
+            <select id="pickupZone" required>
+              <option value="" disabled selected>Choose where you'll collect it</option>
+              <option value="Hotel Lobby">Hotel Lobby</option>
+              <option value="Patel Nagar Kiosk">Patel Nagar Kiosk</option>
+              <option value="Vidyut Nagar Kiosk">Vidyut Nagar Kiosk</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="roomInfo">Hostel name &amp; room number</label>
+            <input type="text" id="roomInfo" placeholder="e.g. Shanti Hostel, Room 204" required>
+            <span id="roomInfoHint" class="form-hint" hidden>Please tell us your hostel name &amp; room number so we know who to hand it to.</span>
+          </div>
+        </div>
+
+        <p id="bookingSuccessNote" class="tiffin-success-note" hidden></p>
+
+      </div>
+
+      <aside class="tiffin-summary-card reveal" aria-label="Order summary">
+        <h2>Your Order</h2>
+        <ul id="priceBreakdown" class="tiffin-breakdown"></ul>
+        <div class="tiffin-total-row">
+          <span>Grand Total</span>
+          <span id="grandTotal">₹80</span>
+        </div>
+        <p class="tiffin-summary-note">Pay on pickup — cash or UPI. No card needed.</p>
+      </aside>
+
+    </div>
+  </section>
+
+</main>
+
+<div class="tiffin-sticky-bar">
+  <div class="container tiffin-sticky-inner">
+    <div class="tiffin-sticky-total">
+      <span class="tiffin-sticky-label">Grand Total</span>
+      <span id="grandTotalSticky" class="tiffin-sticky-amount">₹80</span>
+    </div>
+    <button type="button" id="confirmBookingBtn" class="btn btn-primary" disabled>Confirm Booking</button>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">
+        <span class="brand-mark" aria-hidden="true">LOGO</span>
+        <span class="brand-name">Hotel Sky Inn</span>
+      </div>
+      <p style="color:inherit; max-width:280px;">Opp. Gurukripa Hospital, CLC Street, Piprali Road, Sikar - 332001, Rajasthan.</p>
+    </div>
+    <div>
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="rooms.html">Rooms</a></li>
+        <li><a href="amenities.html">Amenities</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="location.html">Location</a></li>
+        <li><a href="tiffin.html">Tiffin Booking</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Contact</h3>
+      <ul>
+        <li><a href="tel:+919414038601">+91 94140 38601</a></li>
+        <li><a href="https://wa.me/919414038601" target="_blank" rel="noopener">WhatsApp Us</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Hotel Sky Inn, Sikar. All rights reserved.</span>
+  </div>
+</footer>
+
+<a class="whatsapp-float" href="https://wa.me/919414038601?text=Hi%2C%20I%27d%20like%20to%20enquire%20about%20a%20room%20at%20Hotel%20Sky%20Inn." target="_blank" rel="noopener" aria-label="Message us on WhatsApp">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+</a>
+
+<script src="js/main.js"></script>
+<script src="js/tiffin.js"></script>
+</body>
+</html>
