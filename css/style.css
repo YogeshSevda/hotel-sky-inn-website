@@ -194,14 +194,11 @@ a:hover { color: var(--color-accent-dark); }
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1.5px dashed oklch(70% 0.08 75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 8px;
-  letter-spacing: .05em;
-  color: oklch(80% 0.06 75);
+  border: 1.5px solid oklch(70% 0.08 75);
+  object-fit: cover;
+  display: block;
   flex-shrink: 0;
+  background: #fff;
   transition: transform .5s cubic-bezier(.2,.8,.2,1), border-color .3s ease;
 }
 .brand:hover .brand-mark { transform: rotate(180deg); border-color: var(--color-gold); }
@@ -1215,3 +1212,99 @@ body.has-sticky-checkout .whatsapp-float { bottom: 96px; }
 @media (min-width: 900px) {
   .tiffin-sticky-inner { max-width: var(--max-width); }
 }
+
+/* Ensure the hidden attribute always wins over display:flex/grid rules used
+   on the same elements (form-field, form-hint, etc.) elsewhere in this file. */
+[hidden] { display: none !important; }
+
+/* ---- Daily / Monthly mode switch ---- */
+.tiffin-mode-switch {
+  display: flex;
+  gap: 6px;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 5px;
+}
+.tiffin-mode-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease, box-shadow .2s ease;
+}
+.tiffin-mode-btn:hover { color: var(--color-text); }
+.tiffin-mode-btn.is-active {
+  background: var(--color-surface);
+  color: var(--color-accent);
+  box-shadow: 0 2px 8px oklch(30% 0.04 40 / 0.12);
+}
+
+/* ---- Pickup / Delivery toggle ---- */
+.tiffin-delivery-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.tiffin-delivery-option {
+  flex: 1;
+  position: relative;
+  display: block;
+  text-align: center;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 12px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+.tiffin-delivery-option input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.tiffin-delivery-option:has(input:checked) {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #fff;
+}
+.tiffin-delivery-option:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* ---- Monthly plan card ---- */
+.tiffin-monthly-card { border-color: var(--color-gold); }
+.tiffin-monthly-badge {
+  background: oklch(50% 0.14 145);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+.tiffin-monthly-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0 4px;
+  padding: 14px 16px;
+  background: var(--color-bg);
+  border-radius: 10px;
+}
+.tiffin-monthly-price {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+.tiffin-monthly-price small { font-size: 14px; font-weight: 500; color: var(--color-text-muted); }
+.tiffin-monthly-compare { font-size: 13px; color: var(--color-text-muted); text-decoration: line-through; }
