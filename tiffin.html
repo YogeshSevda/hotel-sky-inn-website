@@ -23,7 +23,7 @@
 <header class="site-header">
   <div class="container nav-bar">
     <a class="brand" href="index.html">
-      <span class="brand-mark" aria-hidden="true">LOGO</span>
+      <img class="brand-mark" src="assets/logo.png" alt="" aria-hidden="true">
       <span class="brand-name">Hotel Sky Inn</span>
     </a>
 
@@ -65,66 +65,117 @@
 
       <div class="tiffin-main">
 
+        <div class="tiffin-mode-switch reveal" role="tablist" aria-label="Choose Daily Tiffin or Monthly Plan">
+          <button type="button" id="modeBtnDaily" class="tiffin-mode-btn is-active" role="tab" aria-selected="true">Daily Tiffin</button>
+          <button type="button" id="modeBtnMonthly" class="tiffin-mode-btn" role="tab" aria-selected="false">Monthly Plan</button>
+        </div>
+
         <p id="kitchenClosedNote" class="tiffin-closed-note" hidden>
           Our tiffin kitchen is closed on Sundays — here's next week's menu so you can pre-book.
         </p>
 
-        <div class="tiffin-card reveal">
-          <div class="tiffin-card-head">
-            <h2>This Week's Menu</h2>
-            <span class="tiffin-core-price">Core Tiffin — ₹80</span>
-          </div>
-          <p class="tiffin-core-desc">Every tiffin includes 1 Dal, your choice of curry, 4 Rotis, Rice and Salad. Pick a day below, then choose curry A or B to continue.</p>
+        <div id="dailyPanel">
 
-          <div class="tiffin-day-strip" id="tiffinDayStrip" aria-label="Weekly tiffin menu, Monday to Saturday">
-            <!-- day cards injected by js/tiffin.js -->
+          <div class="tiffin-card reveal">
+            <div class="tiffin-card-head">
+              <h2>This Week's Menu</h2>
+              <span class="tiffin-core-price">Core Tiffin — ₹80</span>
+            </div>
+            <p class="tiffin-core-desc">Every tiffin includes 1 Dal, your choice of curry, 4 Rotis, Rice and Salad. Pick a day below, then choose curry A or B to continue.</p>
+
+            <div class="tiffin-day-strip" id="tiffinDayStrip" aria-label="Weekly tiffin menu, Monday to Saturday">
+              <!-- day cards injected by js/tiffin.js -->
+            </div>
+
+            <p id="tiffinSummaryLine" class="tiffin-summary-line">Pick a day and a curry above to start your order.</p>
           </div>
 
-          <p id="tiffinSummaryLine" class="tiffin-summary-line">Pick a day and a curry above to start your order.</p>
+          <div class="tiffin-card reveal">
+            <h2>Make It Extra Special</h2>
+
+            <div id="earlyBirdBanner" class="early-bird-banner">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+              <span class="early-bird-text">Book by 2:00 PM to save ₹15 on the Shagun Thali!</span>
+              <span id="earlyBirdCountdown" class="early-bird-countdown"></span>
+            </div>
+
+            <div class="tiffin-upgrade-row">
+              <div class="tiffin-upgrade-info">
+                <span class="tiffin-upgrade-emoji" aria-hidden="true">🎉</span>
+                <div>
+                  <h3>Shagun Thali</h3>
+                  <p>Swap your curry for today's premium special. <span id="shagunPriceTag" class="tiffin-upgrade-price">+₹25</span></p>
+                </div>
+              </div>
+              <label class="tiffin-switch">
+                <input type="checkbox" id="shagunToggle" aria-label="Add the Shagun Thali upgrade">
+                <span class="tiffin-switch-track" aria-hidden="true"></span>
+              </label>
+            </div>
+
+            <div class="tiffin-upgrade-row">
+              <div class="tiffin-upgrade-info">
+                <span class="tiffin-upgrade-emoji" aria-hidden="true">🍛</span>
+                <div>
+                  <h3>Baahar ka Tiffin</h3>
+                  <p>+2 extra chapatis, double salad &amp; a sweet, for big appetites. <span class="tiffin-upgrade-price">+₹15</span></p>
+                </div>
+              </div>
+              <label class="tiffin-switch">
+                <input type="checkbox" id="baaharToggle" aria-label="Add the Baahar ka Tiffin extra portion">
+                <span class="tiffin-switch-track" aria-hidden="true"></span>
+              </label>
+            </div>
+          </div>
+
         </div>
 
-        <div class="tiffin-card reveal">
-          <h2>Make It Extra Special</h2>
-
-          <div id="earlyBirdBanner" class="early-bird-banner">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-            <span class="early-bird-text">Book by 2:00 PM to save ₹10 on the Shagun Plate!</span>
-            <span id="earlyBirdCountdown" class="early-bird-countdown"></span>
-          </div>
-
-          <div class="tiffin-upgrade-row">
-            <div class="tiffin-upgrade-info">
-              <span class="tiffin-upgrade-emoji" aria-hidden="true">🎉</span>
-              <div>
-                <h3>The Shagun Plate</h3>
-                <p>Swap your curry for today's premium special. <span id="shagunPriceTag" class="tiffin-upgrade-price">+₹10</span></p>
-              </div>
+        <div id="monthlyPanel" hidden>
+          <div class="tiffin-card tiffin-monthly-card reveal">
+            <div class="tiffin-card-head">
+              <h2>Monthly Tiffin Plan</h2>
+              <span class="tiffin-monthly-badge">Save ₹300 a month</span>
             </div>
-            <label class="tiffin-switch">
-              <input type="checkbox" id="shagunToggle" aria-label="Add the Shagun Plate upgrade">
-              <span class="tiffin-switch-track" aria-hidden="true"></span>
-            </label>
-          </div>
+            <p class="tiffin-core-desc">One fixed price for 30 days of tiffin — that's about ₹70/day instead of ₹80, delivered fresh every day of the month (kitchen closed Sundays).</p>
 
-          <div class="tiffin-upgrade-row">
-            <div class="tiffin-upgrade-info">
-              <span class="tiffin-upgrade-emoji" aria-hidden="true">🍛</span>
-              <div>
-                <h3>Baahar ka Tiffin</h3>
-                <p>+2 extra chapatis, double salad &amp; extra pickle, for big appetites. <span class="tiffin-upgrade-price">+₹15</span></p>
-              </div>
+            <div class="tiffin-monthly-price-row">
+              <span class="tiffin-monthly-price">₹2100<small>/month</small></span>
+              <span class="tiffin-monthly-compare">vs ₹2400 ordering day by day</span>
             </div>
-            <label class="tiffin-switch">
-              <input type="checkbox" id="baaharToggle" aria-label="Add the Baahar ka Tiffin extra portion">
-              <span class="tiffin-switch-track" aria-hidden="true"></span>
-            </label>
+
+            <div class="tiffin-upgrade-row">
+              <div class="tiffin-upgrade-info">
+                <span class="tiffin-upgrade-emoji" aria-hidden="true">🎉</span>
+                <div>
+                  <h3>Upgrade to Shagun Thali — every day</h3>
+                  <p>Get the premium curry all month long, at a bulk rate far below the daily upgrade price. <span class="tiffin-upgrade-price">+₹600/month</span></p>
+                </div>
+              </div>
+              <label class="tiffin-switch">
+                <input type="checkbox" id="monthlyShagunToggle" aria-label="Upgrade the monthly plan to Shagun Thali every day">
+                <span class="tiffin-switch-track" aria-hidden="true"></span>
+              </label>
+            </div>
+
+            <p class="form-hint" style="margin-top:14px;">Once your plan starts, you can still switch which curry (A/B) you get each day when you stop by — the Shagun upgrade above applies to every tiffin for the whole month.</p>
           </div>
         </div>
 
         <div class="tiffin-card reveal">
           <h2>Collection Details</h2>
 
-          <div class="form-field">
+          <div class="tiffin-delivery-toggle" role="radiogroup" aria-label="Choose pickup or delivery">
+            <label class="tiffin-delivery-option">
+              <input type="radio" name="deliveryType" id="deliveryTypePickup" checked>
+              <span>🏠 Pickup</span>
+            </label>
+            <label class="tiffin-delivery-option">
+              <input type="radio" name="deliveryType" id="deliveryTypeDelivery">
+              <span>🛵 Delivery</span>
+            </label>
+          </div>
+
+          <div class="form-field" id="pickupZoneField">
             <label for="pickupZone">Pickup zone</label>
             <select id="pickupZone" required>
               <option value="" disabled selected>Choose where you'll collect it</option>
@@ -132,6 +183,11 @@
               <option value="Patel Nagar Kiosk">Patel Nagar Kiosk</option>
               <option value="Vidyut Nagar Kiosk">Vidyut Nagar Kiosk</option>
             </select>
+          </div>
+
+          <div class="form-field" id="deliveryAddressField" hidden>
+            <label for="deliveryAddress">Delivery address</label>
+            <textarea id="deliveryAddress" rows="3" placeholder="Full address with landmark, for our delivery rider"></textarea>
           </div>
 
           <div class="form-field">
@@ -152,7 +208,7 @@
           <span>Grand Total</span>
           <span id="grandTotal">₹80</span>
         </div>
-        <p class="tiffin-summary-note">Pay on pickup — cash or UPI. No card needed.</p>
+        <p class="tiffin-summary-note">Pay on pickup or delivery — cash or UPI. No card needed.</p>
       </aside>
 
     </div>
@@ -174,7 +230,7 @@
   <div class="footer-grid">
     <div>
       <div class="footer-brand">
-        <span class="brand-mark" aria-hidden="true">LOGO</span>
+        <img class="brand-mark" src="assets/logo.png" alt="" aria-hidden="true">
         <span class="brand-name">Hotel Sky Inn</span>
       </div>
       <p style="color:inherit; max-width:280px;">Opp. Gurukripa Hospital, CLC Street, Piprali Road, Sikar - 332001, Rajasthan.</p>
