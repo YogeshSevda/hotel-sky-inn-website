@@ -1,5 +1,9 @@
 // Hotel Sky Inn — Contact form (page-specific, only used on contact.html)
-// No backend: builds a pre-filled WhatsApp message from the form fields and opens it.
+// Submits to Netlify Forms (so the enquiry actually reaches us — dashboard +
+// email notification), then opens WhatsApp with the same message so the
+// guest also has the fastest channel open if they want it. If JS fails for
+// any reason, the <form>'s own action/method/data-netlify attributes still
+// do a real POST and redirect to thank-you.html — no enquiry is lost either way.
 
 document.addEventListener('DOMContentLoaded', function () {
   var form = document.getElementById('contact-form');
@@ -11,6 +15,12 @@ document.addEventListener('DOMContentLoaded', function () {
   function showStatus(message, type) {
     statusEl.textContent = message;
     statusEl.className = 'form-status is-visible ' + (type === 'error' ? 'is-error' : 'is-success');
+  }
+
+  function encodeFormData(data) {
+    return Object.keys(data)
+      .map(function (key) { return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]); })
+      .join('&');
   }
 
   form.addEventListener('submit', function (e) {
@@ -35,19 +45,45 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    var lines = [
-      'Hi, I\'d like to enquire about a room at Hotel Sky Inn.',
-      'Name: ' + name,
-      'Phone: ' + phone
-    ];
-    if (email) lines.push('Email: ' + email);
-    if (dates) lines.push('Dates: ' + dates);
-    lines.push('Message: ' + message);
+    var submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
 
-    var text = encodeURIComponent(lines.join('\n'));
-    var url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + text;
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: encodeFormData({
+        'form-name': 'contact',
+        name: name,
+        phone: phone,
+        email: email,
+        dates: dates,
+        message: message
+      })
+    })
+      .then(function () {
+        showStatus('Thanks — your message has been sent to us. Opening WhatsApp too, in case you want a faster reply.', 'success');
+      })
+      .catch(function () {
+        // Netlify Forms submission failed (offline, blocked, etc.) — WhatsApp still works below,
+        // so the guest's enquiry still reaches us even if this particular channel didn't.
+        showStatus('Opening WhatsApp with your message ready to send — just hit send there to reach us.', 'success');
+      })
+      .then(function () {
+        var lines = [
+          'Hi, I\'d like to enquire about a room at Hotel Sky Inn.',
+          'Name: ' + name,
+          'Phone: ' + phone
+        ];
+        if (email) lines.push('Email: ' + email);
+        if (dates) lines.push('Dates: ' + dates);
+        lines.push('Message: ' + message);
 
-    showStatus('Opening WhatsApp with your message ready to send — just hit send there to reach us.', 'success');
-    window.open(url, '_blank', 'noopener');
+        var text = encodeURIComponent(lines.join('\n'));
+        var url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + text;
+        window.open(url, '_blank', 'noopener');
+
+        if (submitBtn) submitBtn.disabled = false;
+        form.reset();
+      });
   });
 });

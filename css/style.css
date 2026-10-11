@@ -526,6 +526,11 @@ a:hover { color: var(--color-accent-dark); }
   align-items: start;
 }
 @media (max-width: 900px) { .contact-grid { grid-template-columns: 1fr; } }
+/* The actual grid items are the two bare wrapper <div>s in contact.html, not .contact-form/.contact-info-panel
+   (those are nested one level deeper) — min-width:0 has to go on the wrappers themselves, or their default
+   min-width:auto still lets the nested form/panel's intrinsic size push the single-column track wider than
+   the viewport on mobile. */
+.contact-grid > div { min-width: 0; }
 
 .contact-form {
   display: flex;
@@ -535,6 +540,7 @@ a:hover { color: var(--color-accent-dark); }
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   padding: 32px;
+  min-width: 0; /* grid items default to min-width:auto, which lets a wide child (e.g. the submit button) force the single-column grid track — and the page — wider than the viewport on mobile */
 }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
@@ -905,6 +911,7 @@ a:hover { color: var(--color-accent-dark); }
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   padding: 28px 24px;
+  min-width: 0;
 }
 .contact-info-list { list-style: none; margin: 20px 0 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
 .contact-info-list li { display: flex; gap: 14px; align-items: flex-start; }
@@ -1134,6 +1141,8 @@ body.has-sticky-checkout .whatsapp-float { bottom: 96px; }
 /* ---- Collection form ---- */
 .tiffin-card .form-field { margin-bottom: 16px; }
 .tiffin-card .form-field:last-child { margin-bottom: 0; }
+.tiffin-card .form-row { margin-bottom: 16px; }
+.tiffin-card .form-row .form-field { margin-bottom: 0; }
 .tiffin-card select {
   width: 100%;
   padding: 12px 14px;

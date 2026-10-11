@@ -10,7 +10,17 @@
 <meta property="og:title" content="Daily Tiffin Booking — Hotel Sky Inn, Sikar">
 <meta property="og:description" content="Pre-book your daily tiffin — pick your curry, add an upgrade, choose a pickup zone, and confirm in seconds.">
 <meta property="og:image" content="https://hotel-sky-inn.netlify.app/assets/images/rooms/room-wide-angle-07.jpg">
-<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta property="og:locale" content="en_IN">
+<meta property="og:site_name" content="Hotel Sky Inn">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Daily Tiffin Booking — Hotel Sky Inn, Sikar">
+<meta name="twitter:description" content="Pre-book your daily tiffin — pick your curry, add an upgrade, choose a pickup zone, and confirm in seconds.">
+<meta name="twitter:image" content="https://hotel-sky-inn.netlify.app/assets/images/rooms/room-wide-angle-07.jpg">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" href="assets/favicon-32x32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="assets/favicon-16x16.png" type="image/png" sizes="16x16">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="assets/site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -19,6 +29,35 @@
 </head>
 <body class="has-sticky-checkout">
 <a class="skip-link" href="#main">Skip to content</a>
+
+<!-- Hidden static forms so Netlify's build-time bot registers these form
+     schemas (names + fields) and can capture submissions. Never shown or
+     filled in by a visitor — js/tiffin.js submits to these via fetch(). -->
+<form name="daily-tiffin-order" data-netlify="true" hidden>
+  <input type="text" name="date">
+  <input type="text" name="selected_curry">
+  <input type="text" name="shagun_plate">
+  <input type="text" name="baahar_tiffin">
+  <input type="text" name="total_price">
+  <input type="text" name="delivery_type">
+  <input type="text" name="pickup_zone">
+  <input type="text" name="delivery_address">
+  <input type="text" name="customer_name">
+  <input type="text" name="phone">
+  <input type="text" name="room_no">
+</form>
+<form name="monthly-tiffin-plan" data-netlify="true" hidden>
+  <input type="text" name="order_type">
+  <input type="text" name="start_date">
+  <input type="text" name="shagun_upgrade">
+  <input type="text" name="monthly_price">
+  <input type="text" name="delivery_type">
+  <input type="text" name="pickup_zone">
+  <input type="text" name="delivery_address">
+  <input type="text" name="customer_name">
+  <input type="text" name="phone">
+  <input type="text" name="room_no">
+</form>
 
 <header class="site-header">
   <div class="container nav-bar">
@@ -104,7 +143,7 @@
                 <span class="tiffin-upgrade-emoji" aria-hidden="true">🎉</span>
                 <div>
                   <h3>Shagun Thali</h3>
-                  <p>Swap your curry for today's premium special. <span id="shagunPriceTag" class="tiffin-upgrade-price">+₹25</span></p>
+                  <p>Premium curry of the day, extra dal tadka, 5 rotis with jeera rice, salad and a sweet. <span id="shagunPriceTag" class="tiffin-upgrade-price">+₹25</span></p>
                 </div>
               </div>
               <label class="tiffin-switch">
@@ -148,7 +187,7 @@
                 <span class="tiffin-upgrade-emoji" aria-hidden="true">🎉</span>
                 <div>
                   <h3>Upgrade to Shagun Thali — every day</h3>
-                  <p>Get the premium curry all month long, at a bulk rate far below the daily upgrade price. <span class="tiffin-upgrade-price">+₹600/month</span></p>
+                  <p>Premium curry, extra dal tadka, 5 rotis with jeera rice, salad and a sweet — every day, at a bulk rate far below paying the daily upgrade 30 times over. <span class="tiffin-upgrade-price">+₹600/month</span></p>
                 </div>
               </div>
               <label class="tiffin-switch">
@@ -163,6 +202,19 @@
 
         <div class="tiffin-card reveal">
           <h2>Collection Details</h2>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="tiffinName">Your name</label>
+              <input type="text" id="tiffinName" placeholder="e.g. Rahul Sharma" autocomplete="name" aria-describedby="tiffinNameHint" required>
+              <span id="tiffinNameHint" class="form-hint" hidden>Please tell us your name.</span>
+            </div>
+            <div class="form-field">
+              <label for="tiffinPhone">Phone number</label>
+              <input type="tel" id="tiffinPhone" placeholder="e.g. 98765 43210" autocomplete="tel" inputmode="tel" aria-describedby="tiffinPhoneHint" required>
+              <span id="tiffinPhoneHint" class="form-hint" hidden>Please add a phone number so we can reach you about your order.</span>
+            </div>
+          </div>
 
           <div class="tiffin-delivery-toggle" role="radiogroup" aria-label="Choose pickup or delivery">
             <label class="tiffin-delivery-option">
@@ -192,7 +244,7 @@
 
           <div class="form-field">
             <label for="roomInfo">Hostel name &amp; room number</label>
-            <input type="text" id="roomInfo" placeholder="e.g. Shanti Hostel, Room 204" required>
+            <input type="text" id="roomInfo" placeholder="e.g. Shanti Hostel, Room 204" autocomplete="off" aria-describedby="roomInfoHint" required>
             <span id="roomInfoHint" class="form-hint" hidden>Please tell us your hostel name &amp; room number so we know who to hand it to.</span>
           </div>
         </div>
