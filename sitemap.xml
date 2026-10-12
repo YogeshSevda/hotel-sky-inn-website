@@ -21,6 +21,10 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://hotel-sky-inn.netlify.app/tiffin.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://hotel-sky-inn.netlify.app/contact.html</loc>
     <priority>0.8</priority>
   </url>
