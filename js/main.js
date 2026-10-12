@@ -23,7 +23,72 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initHeaderScrollState();
   initScrollReveal();
+  initLogoPopup();
 });
+
+// Clicking the logo mark (header or footer) opens an enlarged view instead
+// of navigating away — the brand NAME text next to it still links home.
+function initLogoPopup() {
+  var marks = document.querySelectorAll('.brand-mark');
+  if (!marks.length) return;
+
+  var overlay, popupImg;
+
+  function build() {
+    overlay = document.createElement('div');
+    overlay.className = 'logo-popup';
+    overlay.innerHTML =
+      '<div class="logo-popup-card" role="dialog" aria-modal="true" aria-label="Hotel Sky Inn logo">' +
+        '<button type="button" class="logo-popup-close" aria-label="Close">' +
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+        '</button>' +
+        '<img src="assets/logo.png" alt="Hotel Sky Inn logo">' +
+      '</div>';
+    document.body.appendChild(overlay);
+    popupImg = overlay.querySelector('img');
+
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) close();
+    });
+    overlay.querySelector('.logo-popup-close').addEventListener('click', close);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) close();
+    });
+  }
+
+  function open() {
+    if (!overlay) build();
+    overlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    overlay.querySelector('.logo-popup-close').focus();
+  }
+
+  function close() {
+    if (!overlay) return;
+    overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  marks.forEach(function (mark) {
+    mark.setAttribute('tabindex', '0');
+    mark.setAttribute('role', 'button');
+    mark.setAttribute('aria-label', 'View Hotel Sky Inn logo larger');
+    mark.style.cursor = 'zoom-in';
+
+    mark.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      open();
+    });
+    mark.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        open();
+      }
+    });
+  });
+}
 
 // Adds/removes .is-scrolled on the header so it can pick up a subtle
 // shadow/backdrop once the page has scrolled past the hero.
