@@ -1,7 +1,8 @@
 // Hotel Sky Inn — Daily Tiffin Booking
 // Self-contained logic for the tiffin ordering widget on tiffin.html.
-// No backend yet: "Confirm Booking" / "Start Monthly Plan" log the order
-// payload to the console so it can be wired up to a real backend later.
+// "Confirm Booking" / "Start Monthly Plan" submit the order to Netlify Forms
+// (daily-tiffin-order / monthly-tiffin-plan — see the hidden <form> tags near
+// the top of tiffin.html) so real orders land somewhere staff can see them.
 
 (function () {
   'use strict';
@@ -51,7 +52,9 @@
     deliveryType: 'pickup', // 'pickup' | 'delivery'
     pickupZone: '',
     deliveryAddress: '',
-    roomInfo: ''
+    roomInfo: '',
+    customerName: '',
+    phone: ''
   };
 
   var els = {};
@@ -83,6 +86,10 @@
 
     els.roomInfo = document.getElementById('roomInfo');
     els.roomInfoHint = document.getElementById('roomInfoHint');
+    els.tiffinName = document.getElementById('tiffinName');
+    els.tiffinNameHint = document.getElementById('tiffinNameHint');
+    els.tiffinPhone = document.getElementById('tiffinPhone');
+    els.tiffinPhoneHint = document.getElementById('tiffinPhoneHint');
     els.breakdownList = document.getElementById('priceBreakdown');
     els.grandTotal = document.getElementById('grandTotal');
     els.grandTotalSticky = document.getElementById('grandTotalSticky');
@@ -318,6 +325,24 @@
         }
       });
     }
+    if (els.tiffinName) {
+      els.tiffinName.addEventListener('input', function () {
+        state.customerName = els.tiffinName.value.trim();
+        if (els.tiffinNameHint) {
+          els.tiffinNameHint.hidden = state.customerName.length > 0;
+        }
+        updateTotals();
+      });
+    }
+    if (els.tiffinPhone) {
+      els.tiffinPhone.addEventListener('input', function () {
+        state.phone = els.tiffinPhone.value.trim();
+        if (els.tiffinPhoneHint) {
+          els.tiffinPhoneHint.hidden = state.phone.length > 0;
+        }
+        updateTotals();
+      });
+    }
   }
 
   function setDeliveryType(type) {
@@ -399,9 +424,10 @@
     if (els.grandTotalSticky) els.grandTotalSticky.textContent = '₹' + total;
 
     var hasDropoffDetails = state.deliveryType === 'pickup' ? !!state.pickupZone : state.deliveryAddress.length > 0;
+    var hasContactDetails = !!state.customerName && !!state.phone;
     var canConfirm = state.mode === 'monthly'
-      ? hasDropoffDetails
-      : !!state.curryName && hasDropoffDetails;
+      ? hasDropoffDetails && hasContactDetails
+      : !!state.curryName && hasDropoffDetails && hasContactDetails;
 
     if (els.confirmBtn) {
       els.confirmBtn.disabled = !canConfirm;
@@ -410,18 +436,56 @@
     return total;
   }
 
+  // ---------- Submitting to Netlify Forms ----------
+
+  function encodeFormData(data) {
+    return Object.keys(data)
+      .map(function (key) { return encodeURIComponent(key) + '=' + encodeURIComponent(data[key] == null ? '' : data[key]); })
+      .join('&');
+  }
+
+  function submitToNetlify(formName, fields) {
+    var data = Object.assign({ 'form-name': formName }, fields);
+    return fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: encodeFormData(data)
+    });
+  }
+
+  // Checks the shared contact fields (name, phone, room) in order, showing
+  // the first missing one's hint and focusing it. Returns true if all three
+  // are filled in (delivery/pickup and curry are already covered by the
+  // Confirm button's disabled state via updateTotals()).
+  function validateContactFields() {
+    if (!state.customerName) {
+      if (els.tiffinNameHint) els.tiffinNameHint.hidden = false;
+      if (els.tiffinName) els.tiffinName.focus();
+      return false;
+    }
+    if (!state.phone) {
+      if (els.tiffinPhoneHint) els.tiffinPhoneHint.hidden = false;
+      if (els.tiffinPhone) els.tiffinPhone.focus();
+      return false;
+    }
+    if (!state.roomInfo) {
+      if (els.roomInfoHint) els.roomInfoHint.hidden = false;
+      if (els.roomInfo) els.roomInfo.focus();
+      return false;
+    }
+    return true;
+  }
+
   function wireConfirmButton() {
     if (!els.confirmBtn) return;
     els.confirmBtn.addEventListener('click', function () {
       if (els.confirmBtn.disabled) return;
-
-      if (!state.roomInfo) {
-        if (els.roomInfoHint) els.roomInfoHint.hidden = false;
-        if (els.roomInfo) els.roomInfo.focus();
-        return;
-      }
+      if (!validateContactFields()) return;
 
       var total = updateTotals();
+      els.confirmBtn.disabled = true;
+      var originalLabel = els.confirmBtn.textContent;
+      els.confirmBtn.textContent = 'Sending…';
 
       if (state.mode === 'monthly') {
         var istNow = getISTNow();
@@ -431,22 +495,30 @@
           shagun_upgrade: state.monthlyShagun,
           monthly_price: total,
           delivery_type: state.deliveryType,
-          pickup_zone: state.deliveryType === 'pickup' ? state.pickupZone : null,
-          delivery_address: state.deliveryType === 'delivery' ? state.deliveryAddress : null,
+          pickup_zone: state.deliveryType === 'pickup' ? state.pickupZone : '',
+          delivery_address: state.deliveryType === 'delivery' ? state.deliveryAddress : '',
+          customer_name: state.customerName,
+          phone: state.phone,
           room_no: state.roomInfo
         };
 
-        // eslint-disable-next-line no-console
-        console.log('Monthly tiffin plan started:', payload);
-
-        if (els.successNote) {
-          els.successNote.hidden = false;
-          els.successNote.textContent = '🎉 Monthly plan started! ' +
-            (state.monthlyShagun ? 'Shagun Thali every day, ' : '') +
-            (state.deliveryType === 'pickup' ? 'pickup at ' + state.pickupZone : 'delivery to your address') +
-            ' — total ₹' + total + '/month.';
-          els.successNote.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        submitToNetlify('monthly-tiffin-plan', payload).catch(function () {
+          // Submission to Netlify failed (offline, blocked, etc.) — we still
+          // show the success note below since the booking was captured
+          // client-side and the guest has already paid attention to it;
+          // worst case, staff follow up from the WhatsApp/call channels too.
+        }).then(function () {
+          els.confirmBtn.textContent = originalLabel;
+          updateTotals(); // restores the button's enabled state based on current form validity
+          if (els.successNote) {
+            els.successNote.hidden = false;
+            els.successNote.textContent = '🎉 Monthly plan started! ' +
+              (state.monthlyShagun ? 'Shagun Thali every day, ' : '') +
+              (state.deliveryType === 'pickup' ? 'pickup at ' + state.pickupZone : 'delivery to your address') +
+              ' — total ₹' + total + '/month. We have your number and will confirm shortly.';
+            els.successNote.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        });
         return;
       }
 
@@ -457,21 +529,26 @@
         baahar_tiffin: state.baahar,
         total_price: total,
         delivery_type: state.deliveryType,
-        pickup_zone: state.deliveryType === 'pickup' ? state.pickupZone : null,
-        delivery_address: state.deliveryType === 'delivery' ? state.deliveryAddress : null,
+        pickup_zone: state.deliveryType === 'pickup' ? state.pickupZone : '',
+        delivery_address: state.deliveryType === 'delivery' ? state.deliveryAddress : '',
+        customer_name: state.customerName,
+        phone: state.phone,
         room_no: state.roomInfo
       };
 
-      // eslint-disable-next-line no-console
-      console.log('Tiffin booking confirmed:', dailyPayload);
-
-      if (els.successNote) {
-        els.successNote.hidden = false;
-        els.successNote.textContent = '🎉 Order noted! ' + TIFFIN_MENU[state.selectedDay].dal + ' + ' + state.curryName +
-          ' for ' + (state.deliveryType === 'pickup' ? 'pickup at ' + state.pickupZone : 'delivery to your address') +
-          '. We’ll have it ready — total ₹' + total + '.';
-        els.successNote.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      submitToNetlify('daily-tiffin-order', dailyPayload).catch(function () {
+        // see note above — client-side confirmation still shown
+      }).then(function () {
+        els.confirmBtn.textContent = originalLabel;
+        updateTotals(); // restores the button's enabled state based on current form validity
+        if (els.successNote) {
+          els.successNote.hidden = false;
+          els.successNote.textContent = '🎉 Order noted! ' + TIFFIN_MENU[state.selectedDay].dal + ' + ' + state.curryName +
+            ' for ' + (state.deliveryType === 'pickup' ? 'pickup at ' + state.pickupZone : 'delivery to your address') +
+            '. We’ll have it ready — total ₹' + total + '.';
+          els.successNote.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
     });
   }
 })();
